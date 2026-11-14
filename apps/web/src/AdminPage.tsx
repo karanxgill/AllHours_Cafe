@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { apiFetch } from "./api.js";
 
 type Category = {
   id: number;
@@ -111,9 +112,8 @@ async function request<T extends ApiBody>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(`${api}${path}`, {
+  const response = await apiFetch(`${api}${path}`, {
     ...init,
-    credentials: "include",
     headers: {
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...init?.headers,

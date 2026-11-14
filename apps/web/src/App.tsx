@@ -5,6 +5,7 @@ import { ReservationPage } from "./ReservationPage.js";
 import { ContactPage } from "./ContactPage.js";
 import { AdminPage } from "./AdminPage.js";
 import { AboutPage } from "./AboutPage.js";
+import { apiFetch } from "./api.js";
 
 type User = { id: number; fullName: string; email: string; role: string };
 type ApiError = {
@@ -89,14 +90,14 @@ export function App() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
-    fetch(`${API}/me`, { credentials: "include" })
+    apiFetch(`${API}/me`)
       .then((response) => readResponse<{ user: User | null }>(response))
       .then((body) => setUser(body.user))
       .catch(() => setUser(null))
       .finally(() => setAuthResolved(true));
 
     if (path === "/") {
-      fetch("/api/v1/home")
+      apiFetch("/api/v1/home")
         .then((response) =>
           response.ok
             ? readResponse<{ highlights: HomeGroup[] }>(response)
@@ -178,12 +179,14 @@ export function App() {
         };
 
     try {
-      const response = await fetch(`${API}/${isSignup ? "signup" : "login"}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await apiFetch(
+        `${API}/${isSignup ? "signup" : "login"}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       const body = await readResponse<{ user?: User } & ApiError>(response);
       if (!response.ok) {
         setError(
@@ -217,7 +220,7 @@ export function App() {
 
   async function logout() {
     try {
-      await fetch(`${API}/logout`, { method: "POST", credentials: "include" });
+      await apiFetch(`${API}/logout`, { method: "POST" });
       setUser(null);
       window.location.assign("/");
     } catch {

@@ -46,3 +46,22 @@ The menu is managed through the admin dashboard. An admin account is required to
 npm run build
 npm run typecheck
 ```
+
+## Deploy on Vercel
+
+Deploy the frontend and API as two Vercel projects from this GitHub repository. Vercel supports Express apps and npm workspaces in monorepos.
+
+1. Create the API project with the root directory set to `apps/api`. Use Node.js 22.12 or newer. Add these Production environment variables:
+
+   - `DATABASE_URL`: the Neon PostgreSQL pooled connection string
+   - `SESSION_SECRET`: a random secret with at least 32 characters
+   - `WEB_ORIGIN`: the exact HTTPS origin of the deployed frontend
+   - `NODE_ENV`: `production`
+
+2. Deploy the API project and copy its origin, such as `https://your-api-project.vercel.app`.
+
+3. Create the frontend project from the same repository with the root directory set to `apps/web`. Set the Production environment variable `API_ORIGIN` to the API origin from step 2, with no path or trailing slash.
+
+The frontend Vercel config proxies `/api/*` to the API project while keeping browser requests on the frontend origin. This lets the app retain its HTTP-only `SameSite=Lax` session cookie. The Vercel project config uses `API_ORIGIN` while building, so add it before the first frontend deployment.
+
+For preview deployments, configure the matching preview API origin and add the preview frontend origin to the API project's comma-separated `WEB_ORIGIN` value. Keep preview and production database settings separate.

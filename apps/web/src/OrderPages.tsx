@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "./api.js";
 
 type CartLine = {
   id: number;
@@ -224,10 +225,9 @@ export function CheckoutPage({ user }: { user: User | null }) {
       specialInstructions: String(data.get("specialInstructions") || ""),
     };
     try {
-      const response = await fetch("/api/v1/orders", {
+      const response = await apiFetch("/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(payload),
       });
       const body = (await response.json()) as { order?: Order } & ApiError;
@@ -411,9 +411,7 @@ export function OrderConfirmationPage({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    fetch(`/api/v1/orders/${encodeURIComponent(orderId)}`, {
-      credentials: "include",
-    })
+    apiFetch(`/api/v1/orders/${encodeURIComponent(orderId)}`)
       .then(async (response) => {
         const body = (await response.json()) as { order?: Order } & ApiError;
         if (response.status === 401) {

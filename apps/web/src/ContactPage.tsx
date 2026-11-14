@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { apiFetch } from "./api.js";
 
 type ApiResponse = {
   message?: string;
@@ -18,7 +19,7 @@ export function ContactPage() {
     const form = event.currentTarget;
     const data = new FormData(form);
     try {
-      const response = await fetch("/api/v1/contacts", {
+      const response = await apiFetch("/api/v1/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

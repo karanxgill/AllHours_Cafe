@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { apiFetch } from "./api.js";
 
 type User = { id: number; fullName: string; email: string; role: string };
 type Reservation = {
@@ -43,9 +44,7 @@ export function ReservationPage({
 
   useEffect(() => {
     if (!reservationId) return;
-    fetch(`/api/v1/reservations/${encodeURIComponent(reservationId)}`, {
-      credentials: "include",
-    })
+    apiFetch(`/api/v1/reservations/${encodeURIComponent(reservationId)}`)
       .then(async (response) => {
         const body = (await response.json()) as {
           reservation?: Reservation;
@@ -84,10 +83,9 @@ export function ReservationPage({
       return;
     }
     try {
-      const response = await fetch("/api/v1/reservations", {
+      const response = await apiFetch("/api/v1/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           name: String(data.get("name") || ""),
           phoneNumber: String(data.get("phoneNumber") || ""),

@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "./api.js";
 
 type Category = {
   id: number;
@@ -44,7 +45,7 @@ export function MenuPage() {
   const [cartNotice, setCartNotice] = useState("");
 
   useEffect(() => {
-    fetch("/api/v1/menu/categories")
+    apiFetch("/api/v1/menu/categories")
       .then(async (response) => {
         const body = (await response.json()) as {
           categories?: Category[];
@@ -77,7 +78,7 @@ export function MenuPage() {
         Object.entries(dietary).forEach(([key, checked]) => {
           if (checked) params.set(key, "true");
         });
-        fetch(`/api/v1/menu/items?${params}`, { signal: controller.signal })
+        apiFetch(`/api/v1/menu/items?${params}`, { signal: controller.signal })
           .then(async (response) => {
             const body = (await response.json()) as {
               items?: MenuItem[];
