@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { default as helmet } from "helmet";
+import { createRequire } from "node:module";
 import { env } from "./config/env.js";
 import { isAllowedWebOrigin } from "./config/origins.js";
 import { prisma } from "./db/prisma.js";
@@ -13,6 +13,8 @@ import { contactsRouter } from "./domains/contacts/routes.js";
 import { adminRouter } from "./domains/admin/routes.js";
 
 export const app = express();
+const require = createRequire(import.meta.url);
+const helmet = require("helmet");
 
 app.disable("x-powered-by");
 app.use(helmet());
