@@ -136,32 +136,42 @@ ordersRouter.post("/", async (request, response) => {
     const tax = decimalFromCents(taxCents);
     const deliveryFee = decimalFromCents(0);
 
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        customerName: parsed.data.customerName,
-        customerEmail: parsed.data.customerEmail.trim().toLowerCase(),
-        customerPhone: parsed.data.customerPhone,
-        deliveryAddress: "Cafe pickup",
-        city: "Pickup",
-        state: "Pickup",
-        postalCode: "Pickup",
-        specialInstructions: parsed.data.specialInstructions || null,
-        orderType: "Pickup",
-        deliveryTime: parsed.data.deliveryTime
-          ? new Date(parsed.data.deliveryTime)
-          : null,
-        subTotal: subtotal,
-        deliveryFee,
-        tax,
-        total: subtotal.add(tax).add(deliveryFee),
-        paymentMethod: "Pay at cafe",
-        paymentStatus: "Pending",
-        orderStatus: "Pending",
-        paymentDetails: "Payment collection is pending",
-        orderItems: { create: itemSnapshots },
-      },
-      include: { orderItems: true },
+    const order = await prisma.$transaction(async (transaction) => {
+      const createdOrder = await transaction.order.create({
+        data: {
+          userId,
+          customerName: parsed.data.customerName,
+          customerEmail: parsed.data.customerEmail.trim().toLowerCase(),
+          customerPhone: parsed.data.customerPhone,
+          deliveryAddress: "Cafe pickup",
+          city: "Pickup",
+          state: "Pickup",
+          postalCode: "Pickup",
+          specialInstructions: parsed.data.specialInstructions || null,
+          orderType: "Pickup",
+          deliveryTime: parsed.data.deliveryTime
+            ? new Date(parsed.data.deliveryTime)
+            : null,
+          subTotal: subtotal,
+          deliveryFee,
+          tax,
+          total: subtotal.add(tax).add(deliveryFee),
+          paymentMethod: "Pay at cafe",
+          paymentStatus: "Pending",
+          orderStatus: "Pending",
+          paymentDetails: "Payment collection is pending",
+          orderItems: { create: itemSnapshots },
+        },
+        include: { orderItems: true },
+      });
+      await transaction.user.update({
+        where: { id: userId },
+        data: {
+          fullName: parsed.data.customerName,
+          phoneNumber: parsed.data.customerPhone,
+        },
+      });
+      return createdOrder;
     });
     response.status(201).json({ order: serializeOrder(order) });
   } catch (error) {

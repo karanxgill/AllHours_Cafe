@@ -192,10 +192,25 @@ export function CartPage() {
 
 export function CheckoutPage({ user }: { user: User | null }) {
   const [items, setItems] = useState<CartLine[]>([]);
+  const [contactDetails, setContactDetails] = useState({
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phoneNumber: "",
+  });
   const orderType = "Pickup" as const;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => setItems(readCart()), []);
+  useEffect(() => {
+    if (!user) return;
+    apiFetch("/api/v1/auth/profile")
+      .then((response) => response.ok ? response.json() as Promise<{ profile?: { fullName: string; email: string; phoneNumber: string | null } }> : Promise.reject())
+      .then((body) => {
+        if (!body.profile) return;
+        setContactDetails({ fullName: body.profile.fullName, email: body.profile.email, phoneNumber: body.profile.phoneNumber || "" });
+      })
+      .catch(() => undefined);
+  }, [user]);
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [items],
@@ -315,7 +330,8 @@ export function CheckoutPage({ user }: { user: User | null }) {
                   <input
                     name="customerName"
                     autoComplete="name"
-                    defaultValue={user.fullName}
+                    value={contactDetails.fullName}
+                    onChange={(event) => setContactDetails({ ...contactDetails, fullName: event.target.value })}
                     required
                     maxLength={100}
                   />
@@ -326,7 +342,8 @@ export function CheckoutPage({ user }: { user: User | null }) {
                     name="customerEmail"
                     type="email"
                     autoComplete="email"
-                    defaultValue={user.email}
+                    value={contactDetails.email}
+                    onChange={(event) => setContactDetails({ ...contactDetails, email: event.target.value })}
                     required
                     maxLength={255}
                   />
@@ -337,6 +354,8 @@ export function CheckoutPage({ user }: { user: User | null }) {
                     name="customerPhone"
                     type="tel"
                     autoComplete="tel"
+                    value={contactDetails.phoneNumber}
+                    onChange={(event) => setContactDetails({ ...contactDetails, phoneNumber: event.target.value })}
                     required
                     maxLength={50}
                   />

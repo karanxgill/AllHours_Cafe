@@ -3195,3 +3195,239 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.account-page {
+  min-height: 70vh;
+  padding: 3rem 1.5rem 5rem;
+  background: #f8f5f1;
+}
+.account-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+.account-heading,
+.account-card-heading,
+.account-order-top,
+.account-order-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.account-heading {
+  margin-bottom: 1.8rem;
+}
+.account-heading h1,
+.account-card-heading h2 {
+  margin: 0.2rem 0;
+  color: #4e382d;
+}
+.account-heading > div > p:last-child {
+  margin: 0.4rem 0 0;
+  color: #766b63;
+}
+.account-back-link {
+  color: #684b3a;
+  font-weight: 700;
+  text-decoration: none;
+}
+.account-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.account-metrics article,
+.account-card {
+  border: 1px solid #eee5dc;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(74 48 33 / 5%);
+}
+.account-metrics article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.15rem 1.3rem;
+}
+.account-metrics span,
+.account-order-top span,
+.account-order-bottom > span:last-of-type,
+.account-footnote,
+.account-payment-note {
+  color: #80766e;
+  font-size: 0.9rem;
+}
+.account-metrics strong {
+  color: #4e382d;
+  font-size: 1.45rem;
+}
+.account-columns {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.5fr);
+  align-items: start;
+  gap: 1.2rem;
+}
+.account-card {
+  padding: 1.4rem;
+}
+.account-card-heading {
+  margin-bottom: 1rem;
+}
+.account-form {
+  display: grid;
+  gap: 1rem;
+}
+.account-form label {
+  display: grid;
+  gap: 0.45rem;
+  color: #54463e;
+  font-weight: 650;
+}
+.account-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #dfd4ca;
+  border-radius: 8px;
+  background: #fff;
+  color: #342c27;
+  font: inherit;
+}
+.account-form input:focus {
+  outline: 2px solid #b98b65;
+  outline-offset: 1px;
+}
+.account-form input[readonly] {
+  background: #f7f4f1;
+  color: #766b63;
+}
+.account-form button {
+  justify-self: start;
+  border: 0;
+  cursor: pointer;
+}
+.account-form button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.account-footnote {
+  margin: 1.1rem 0 0;
+}
+.account-notice {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: #e9f5ec;
+  color: #285e37;
+}
+.account-order-list {
+  display: grid;
+}
+.account-order {
+  padding: 1rem 0;
+  border-top: 1px solid #eee8e2;
+}
+.account-order-top > div {
+  display: grid;
+  gap: 0.25rem;
+}
+.account-order-top > strong,
+.account-order-top > div > strong {
+  color: #4e382d;
+}
+.account-order > p {
+  margin: 0.65rem 0;
+  color: #6f655e;
+  font-size: 0.92rem;
+}
+.account-order-bottom {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  font-size: 0.82rem;
+}
+.account-order-bottom a,
+.account-empty a {
+  color: #76533c;
+  font-weight: 700;
+}
+.account-status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #f4eee7;
+  color: #684b3a;
+  font-weight: 700;
+}
+.account-empty {
+  padding: 1.5rem 0;
+  color: #756a62;
+}
+.account-empty h3 {
+  margin: 0 0 0.4rem;
+  color: #4e382d;
+}
+.account-payment-note {
+  margin: 1.2rem 0 0;
+}
+
+@media (max-width: 760px) {
+  .account-page {
+    padding: 2rem 1rem 3rem;
+  }
+  .account-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .account-metrics {
+    grid-template-columns: 1fr;
+  }
+  .account-columns {
+    grid-template-columns: 1fr;
+  }
+  .account-card {
+    padding: 1.1rem;
+  }
+}
+
+@media (max-width: 1040px) {
+  .admin-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-catalog-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .admin-catalog-filters {
+    width: 100%;
+  }
+}
+@media (max-width: 680px) {
+  .admin-category-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-catalog-panel {
+    padding: 1rem 0.8rem 0.4rem;
+  }
+  .admin-catalog-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-search {
+    grid-column: 1/-1;
+  }
+  .admin-search input {
+    width: 100%;
+  }
+  .admin-filter select {
+    width: 100%;
+  }
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-wide {
+    grid-column: auto;
+  }
+  .admin-checks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

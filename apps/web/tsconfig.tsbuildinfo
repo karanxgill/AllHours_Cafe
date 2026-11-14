@@ -1,1 +1,1 @@
-{"root":["./src/aboutpage.tsx","./src/adminpage.tsx","./src/app.tsx","./src/contactpage.tsx","./src/menupage.tsx","./src/orderpages.tsx","./src/reservationpage.tsx","./src/main.tsx"],"version":"5.7.3"}
+{"root":["./src/aboutpage.tsx","./src/admincustomerspage.tsx","./src/adminpage.tsx","./src/app.tsx","./src/contactpage.tsx","./src/menupage.tsx","./src/orderpages.tsx","./src/profilepage.tsx","./src/reservationpage.tsx","./src/api.ts","./src/main.tsx"],"version":"5.7.3"}

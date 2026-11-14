@@ -90,6 +90,7 @@ adminRouter.get("/dashboard", async (_request, response) => {
       reservations,
       unreadContacts,
       orders,
+      customers,
       recentReservations,
       recentContacts,
     ] = await Promise.all([
@@ -98,6 +99,7 @@ adminRouter.get("/dashboard", async (_request, response) => {
       prisma.reservation.count(),
       prisma.contact.count({ where: { isRead: false } }),
       prisma.order.count(),
+      prisma.user.count({ where: { role: "User" } }),
       prisma.reservation.findMany({
         orderBy: { createdAt: "desc" },
         take: 5,
@@ -122,7 +124,7 @@ adminRouter.get("/dashboard", async (_request, response) => {
       }),
     ]);
     response.json({
-      metrics: { menuItems, categories, reservations, unreadContacts, orders },
+      metrics: { menuItems, categories, reservations, unreadContacts, orders, customers },
       recentReservations,
       recentContacts,
     });
@@ -179,6 +181,94 @@ adminRouter.get("/orders", async (_request, response) => {
           message: "Orders are temporarily unavailable.",
         },
       });
+  }
+});
+
+adminRouter.get("/customers", async (_request, response) => {
+  try {
+    const customers = await prisma.user.findMany({
+      where: { role: "User" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        createdAt: true,
+        orders: { select: { total: true, orderDate: true, orderStatus: true } },
+      },
+    });
+    response.json({
+      customers: customers.map((customer) => ({
+        id: customer.id,
+        fullName: customer.fullName,
+        email: customer.email,
+        phoneNumber: customer.phoneNumber,
+        createdAt: customer.createdAt.toISOString(),
+        orderCount: customer.orders.length,
+        lifetimeSpend: customer.orders.reduce((sum, order) => sum + Number(order.total), 0),
+        latestOrderAt: customer.orders.reduce<string | null>((latest, order) =>
+          !latest || order.orderDate > new Date(latest) ? order.orderDate.toISOString() : latest, null),
+        activeOrders: customer.orders.filter((order) => !["Completed", "Delivered", "Cancelled"].includes(order.orderStatus)).length,
+      })),
+    });
+  } catch (error) {
+    console.error("Admin customer list failed:", error instanceof Error ? error.message : "Unknown error");
+    response.status(500).json({ error: { code: "ADMIN_CUSTOMERS_FAILED", message: "Customer records are temporarily unavailable." } });
+  }
+});
+
+adminRouter.get("/customers/:id", async (request, response) => {
+  const id = Number(request.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    response.status(400).json({ error: { code: "INVALID_CUSTOMER", message: "Choose a valid customer." } });
+    return;
+  }
+  try {
+    const customer = await prisma.user.findFirst({
+      where: { id, role: "User" },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        address: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        createdAt: true,
+        orders: { orderBy: { orderDate: "desc" }, include: { orderItems: { orderBy: { id: "asc" } } } },
+      },
+    });
+    if (!customer) {
+      response.status(404).json({ error: { code: "CUSTOMER_NOT_FOUND", message: "That customer could not be found." } });
+      return;
+    }
+    response.json({
+      customer: {
+        id: customer.id,
+        fullName: customer.fullName,
+        email: customer.email,
+        phoneNumber: customer.phoneNumber,
+        address: customer.address,
+        city: customer.city,
+        state: customer.state,
+        postalCode: customer.postalCode,
+        createdAt: customer.createdAt.toISOString(),
+        orders: customer.orders.map((order) => ({
+          id: order.id,
+          orderDate: order.orderDate.toISOString(),
+          total: Number(order.total),
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          orderStatus: order.orderStatus,
+          items: order.orderItems.map((item) => ({ name: item.name, quantity: item.quantity, total: Number(item.total) })),
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Admin customer detail failed:", error instanceof Error ? error.message : "Unknown error");
+    response.status(500).json({ error: { code: "ADMIN_CUSTOMER_FAILED", message: "Customer details are temporarily unavailable." } });
   }
 });
 

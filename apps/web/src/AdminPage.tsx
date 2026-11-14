@@ -63,6 +63,7 @@ type AdminData = {
     reservations: number;
     unreadContacts: number;
     orders: number;
+    customers: number;
   };
   recentReservations: Array<{
     id: number;
@@ -411,6 +412,10 @@ export function AdminPage({ path }: { path: string }) {
               <span className="admin-nav-dot" />
               Orders
             </a>
+            <a href="/admin/customers">
+              <span className="admin-nav-dot" />
+              Customers
+            </a>
           </nav>
           <div className="admin-sidebar-bottom">
             <span className="admin-sidebar-caption">STAFF CONSOLE</span>
@@ -519,6 +524,7 @@ export function AdminPage({ path }: { path: string }) {
                     ],
                     ["Reservations", dashboard.metrics.reservations, "#"],
                     ["Orders", dashboard.metrics.orders, "/admin/orders"],
+                    ["Customers", dashboard.metrics.customers, "/admin/customers"],
                     ["Unread messages", dashboard.metrics.unreadContacts, "#"],
                   ].map(([label, value, href]) => (
                     <a

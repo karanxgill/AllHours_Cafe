@@ -5,6 +5,8 @@ import { ReservationPage } from "./ReservationPage.js";
 import { ContactPage } from "./ContactPage.js";
 import { AdminPage } from "./AdminPage.js";
 import { AboutPage } from "./AboutPage.js";
+import { ProfilePage } from "./ProfilePage.js";
+import { AdminCustomersPage } from "./AdminCustomersPage.js";
 import { apiFetch } from "./api.js";
 
 type User = { id: number; fullName: string; email: string; role: string };
@@ -296,9 +298,9 @@ export function App() {
           <span className="auth-links-placeholder" aria-hidden="true" />
         ) : user ? (
           <div className="auth-links signed-in-links">
-            <span className="welcome-user">
+            <a className="nav-link" href="/profile">
               Hi, {user.fullName.split(" ")[0]}
-            </span>
+            </a>
             {(user.role === "Admin" || user.role === "SuperAdmin") && (
               <a className="nav-link" href="/admin">
                 Admin
@@ -359,7 +361,9 @@ export function App() {
       )}
 
       <main className={isAdminRoute ? "admin-app-main" : undefined}>
-        {path.startsWith("/admin") ? (
+        {path.startsWith("/admin/customers") ? (
+          <AdminCustomersPage path={path} />
+        ) : path.startsWith("/admin") ? (
           <AdminPage path={path} />
         ) : path === "/menu" ? (
           <MenuPage />
@@ -377,6 +381,8 @@ export function App() {
           <ReservationPage user={user} />
         ) : reservationRoute ? (
           <ReservationPage user={user} reservationId={reservationRoute[1]} />
+        ) : path === "/profile" ? (
+          <ProfilePage />
         ) : path === "/contact" ? (
           <ContactPage />
         ) : isLogin || isSignup ? (
