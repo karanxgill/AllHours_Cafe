@@ -1,23 +1,27 @@
-const apiOrigin = process.env.API_ORIGIN;
+const configuredApiOrigin =
+  process.env.API_ORIGIN || "https://all-hours-cafe-api.vercel.app";
 
-if (!apiOrigin) {
-  throw new Error("Set API_ORIGIN to the deployed API project origin.");
-}
+const parsedApiOrigin = new URL(configuredApiOrigin);
 
-const parsedApiOrigin = new URL(apiOrigin);
-
-if (parsedApiOrigin.protocol !== "https:" || parsedApiOrigin.pathname !== "/") {
+if (
+  parsedApiOrigin.protocol !== "https:" ||
+  parsedApiOrigin.pathname !== "/" ||
+  parsedApiOrigin.search ||
+  parsedApiOrigin.hash
+) {
   throw new Error("API_ORIGIN must be an HTTPS origin without a path.");
 }
+
+const apiOrigin = parsedApiOrigin.origin;
 
 export const config = {
   rewrites: [
     {
       source: "/api/:path*",
-      destination: `${parsedApiOrigin.origin}/api/:path*`,
+      destination: `${apiOrigin}/api/:path*`,
     },
     {
-      source: "/:path((?!api/).*)",
+      source: "/(.*)",
       destination: "/index.html",
     },
   ],
