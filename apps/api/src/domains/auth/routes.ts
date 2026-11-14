@@ -69,9 +69,10 @@ authRouter.post("/signup", async (request, response) => {
       },
       select: publicUserSelect,
     });
+    setSessionCookie(response, user.id, false);
     response
       .status(201)
-      .json({ message: "Account created. Please sign in.", user });
+      .json({ message: "Account created and signed in.", user });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

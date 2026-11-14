@@ -208,7 +208,10 @@ export function App() {
       }
 
       if (isSignup) {
-        window.location.assign("/?registered=1");
+        const returnPath = safeReturnPath();
+        window.location.assign(
+          returnPath === "/" ? "/?registered=1" : returnPath,
+        );
         return;
       }
       if (body.user) setUser(body.user);
