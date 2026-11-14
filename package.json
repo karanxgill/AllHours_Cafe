@@ -1,0 +1,14 @@
+{
+  "name": "all-hours-cafe-migration",
+  "private": true,
+  "engines": { "node": ">=22.12.0" },
+  "workspaces": ["apps/web", "apps/api"],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm --workspace @all-hours-cafe/api run dev",
+    "dev:web": "npm --workspace @all-hours-cafe/web run dev",
+    "build": "npm run build --workspace @all-hours-cafe/api && npm run build --workspace @all-hours-cafe/web",
+    "typecheck": "npm run typecheck --workspace @all-hours-cafe/api && npm run typecheck --workspace @all-hours-cafe/web"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}

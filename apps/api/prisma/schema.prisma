@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// PostgreSQL uses lowercase snake_case table and column names. The import from
+// the legacy MySQL database maps its PascalCase fields explicitly in the ETL.
+model User {
+  id                       Int            @id @default(autoincrement())
+  fullName                 String         @map("full_name") @db.VarChar(100)
+  email                    String         @unique(map: "users_email_key") @db.VarChar(255)
+  passwordHash             String         @map("password_hash") @db.VarChar(255)
+  phoneNumber              String?        @map("phone_number") @db.VarChar(50)
+  address                  String?        @db.VarChar(255)
+  city                     String?        @db.VarChar(100)
+  state                    String?        @db.VarChar(100)
+  postalCode               String?        @map("postal_code") @db.VarChar(20)
+  dateOfBirth              DateTime?      @map("date_of_birth") @db.Date
+  preferredLanguage        String?        @map("preferred_language") @db.VarChar(50)
+  isActive                 Boolean        @default(true) @map("is_active")
+  createdAt                DateTime       @default(now()) @map("created_at") @db.Timestamp(3)
+  profilePictureUrl        String?        @map("profile_picture_url") @db.VarChar(500)
+  role                     String         @default("User") @db.VarChar(20)
+  passwordResetTokenHash   String?        @map("password_reset_token_hash") @db.VarChar(255)
+  passwordResetTokenExpiry DateTime?      @map("password_reset_token_expiry") @db.Timestamp(3)
+  savedAddresses           SavedAddress[]
+  orders                   Order[]
+
+  @@map("users")
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  description String?    @db.VarChar(500)
+  imageUrl    String?    @map("image_url") @db.VarChar(500)
+  isActive    Boolean    @default(true) @map("is_active")
+  menuItems   MenuItem[]
+
+  @@map("categories")
+}
+
+model MenuItem {
+  id              Int             @id @default(autoincrement())
+  name            String          @db.VarChar(100)
+  description     String?         @db.VarChar(500)
+  price           Decimal         @db.Decimal(18, 2)
+  imageUrl        String?         @map("image_url") @db.VarChar(500)
+  isVegetarian    Boolean         @default(false) @map("is_vegetarian")
+  isVegan         Boolean         @default(false) @map("is_vegan")
+  isGlutenFree    Boolean         @default(false) @map("is_gluten_free")
+  isActive        Boolean         @default(true) @map("is_active")
+  categoryId      Int             @map("category_id")
+  spicyLevel      String?         @map("spicy_level") @db.VarChar(50)
+  prepTimeMinutes Int?            @map("prep_time_minutes")
+  calories        Decimal?        @db.Decimal(18, 2)
+  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  highlights      MenuHighlight[]
+
+  @@index([categoryId, isActive], map: "menu_items_category_id_is_active_idx")
+  @@map("menu_items")
+}
+
+model MenuHighlight {
+  id                Int      @id @default(autoincrement())
+  menuItemId        Int      @map("menu_item_id")
+  displayOrder      Int      @map("display_order")
+  section           String   @default("Breakfast") @db.VarChar(100)
+  customTitle       String?  @map("custom_title") @db.VarChar(100)
+  customDescription String?  @map("custom_description") @db.VarChar(200)
+  customImageUrl    String?  @map("custom_image_url") @db.VarChar(255)
+  isActive          Boolean  @default(true) @map("is_active")
+  menuItem          MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId], map: "menu_highlights_menu_item_id_idx")
+  @@map("menu_highlights")
+}
+
+model Reservation {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(100)
+  email           String   @db.VarChar(255)
+  phoneNumber     String   @map("phone_number") @db.VarChar(50)
+  numberOfGuests  Int      @map("number_of_guests")
+  reservationDate DateTime @map("reservation_date") @db.Timestamp(3)
+  reservationTime DateTime @map("reservation_time") @db.Timestamp(3)
+  specialRequests String?  @map("special_requests") @db.VarChar(500)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  isConfirmed     Boolean  @default(false) @map("is_confirmed")
+  paymentStatus   String   @default("Pending") @map("payment_status") @db.VarChar(50)
+  paymentMethod   String   @default("PayU") @map("payment_method") @db.VarChar(50)
+  paymentTxnId    String?  @map("payment_txn_id") @db.VarChar(255)
+  paymentAmount   Decimal  @default(500.00) @map("payment_amount") @db.Decimal(18, 2)
+
+  @@index([createdAt], map: "reservations_created_at_idx")
+  @@index([paymentStatus], map: "reservations_payment_status_idx")
+  @@map("reservations")
+}
+
+model Order {
+  id                  Int         @id @default(autoincrement())
+  userId              Int?        @map("user_id")
+  customerName        String      @map("customer_name") @db.VarChar(100)
+  customerEmail       String      @map("customer_email") @db.VarChar(255)
+  customerPhone       String      @map("customer_phone") @db.VarChar(50)
+  deliveryAddress     String      @map("delivery_address") @db.VarChar(200)
+  city                String      @db.VarChar(50)
+  state               String      @db.VarChar(50)
+  postalCode          String      @map("postal_code") @db.VarChar(20)
+  specialInstructions String?     @map("special_instructions") @db.VarChar(500)
+  orderType           String      @map("order_type") @db.VarChar(50)
+  deliveryTime        DateTime?   @map("delivery_time") @db.Timestamp(3)
+  subTotal            Decimal     @map("sub_total") @db.Decimal(18, 2)
+  deliveryFee         Decimal     @map("delivery_fee") @db.Decimal(18, 2)
+  tax                 Decimal     @db.Decimal(18, 2)
+  total               Decimal     @db.Decimal(18, 2)
+  paymentMethod       String      @default("Pending") @map("payment_method") @db.VarChar(50)
+  paymentStatus       String      @default("Pending") @map("payment_status") @db.VarChar(50)
+  orderStatus         String      @default("Pending") @map("order_status") @db.VarChar(50)
+  paymentDetails      String      @default("None") @map("payment_details") @db.VarChar(500)
+  orderDate           DateTime    @default(now()) @map("order_date") @db.Timestamp(3)
+  user                User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderItems          OrderItem[]
+
+  @@index([userId, orderDate], map: "orders_user_id_order_date_idx")
+  @@index([orderStatus, orderDate], map: "orders_order_status_order_date_idx")
+  @@index([paymentStatus], map: "orders_payment_status_idx")
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int     @map("order_id")
+  // Deliberately no MenuItem relation: this is a historical line-item snapshot.
+  menuItemId Int     @map("menu_item_id")
+  name       String  @db.VarChar(255)
+  price      Decimal @db.Decimal(18, 2)
+  quantity   Int
+  total      Decimal @db.Decimal(18, 2)
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId], map: "order_items_order_id_idx")
+  @@map("order_items")
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @db.VarChar(255)
+  subject   String   @db.VarChar(200)
+  message   String   @db.VarChar(2000)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  isRead    Boolean  @default(false) @map("is_read")
+
+  @@index([isRead, createdAt], map: "contacts_is_read_created_at_idx")
+  @@map("contacts")
+}
+
+model SavedAddress {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @map("user_id")
+  name            String    @db.VarChar(100)
+  customerName    String    @map("customer_name") @db.VarChar(100)
+  customerPhone   String    @map("customer_phone") @db.VarChar(50)
+  deliveryAddress String    @map("delivery_address") @db.VarChar(200)
+  city            String    @db.VarChar(50)
+  state           String    @db.VarChar(50)
+  postalCode      String    @map("postal_code") @db.VarChar(20)
+  isDefault       Boolean   @default(false) @map("is_default")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(3)
+  updatedAt       DateTime? @map("updated_at") @db.Timestamp(3)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault], map: "saved_addresses_user_id_is_default_idx")
+  @@map("saved_addresses")
+}

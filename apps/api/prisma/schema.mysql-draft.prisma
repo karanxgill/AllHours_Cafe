@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Initial domain map only. Before db push/migrate, introspect a backed-up staging
+// database and reconcile field names, nullability, defaults, and legacy IDs.
+model User {
+  id                       Int            @id @default(autoincrement())
+  fullName                 String         @map("FullName") @db.VarChar(100)
+  email                    String         @unique(map: "IX_Users_Email") @map("Email") @db.VarChar(255)
+  passwordHash             String         @map("PasswordHash") @db.VarChar(255)
+  phoneNumber              String?        @map("PhoneNumber") @db.VarChar(50)
+  address                  String?        @map("Address") @db.VarChar(255)
+  city                     String?        @map("City") @db.VarChar(100)
+  state                    String?        @map("State") @db.VarChar(100)
+  postalCode               String?        @map("PostalCode") @db.VarChar(20)
+  dateOfBirth              DateTime?      @map("DateOfBirth") @db.Date
+  preferredLanguage        String?        @map("PreferredLanguage") @db.VarChar(50)
+  isActive                 Boolean        @default(true) @map("IsActive")
+  createdAt                DateTime       @default(now()) @map("CreatedAt")
+  profilePictureUrl        String?        @map("ProfilePictureUrl") @db.VarChar(500)
+  role                     String         @default("User") @map("Role") @db.VarChar(20)
+  passwordResetToken       String?        @map("PasswordResetToken") @db.VarChar(255)
+  passwordResetTokenExpiry DateTime?      @map("PasswordResetTokenExpiry")
+  savedAddresses           SavedAddress[]
+
+  @@map("Users")
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @map("Name") @db.VarChar(100)
+  description String?    @map("Description") @db.VarChar(500)
+  imageUrl    String?    @map("ImageUrl") @db.VarChar(500)
+  isActive    Boolean    @default(true) @map("IsActive")
+  menuItems   MenuItem[]
+
+  @@map("Categories")
+}
+
+model MenuItem {
+  id              Int            @id @default(autoincrement())
+  name            String         @map("Name") @db.VarChar(100)
+  description     String?        @map("Description") @db.VarChar(500)
+  price           Decimal        @map("Price") @db.Decimal(18, 2)
+  imageUrl        String?        @map("ImageUrl") @db.VarChar(500)
+  isVegetarian    Boolean        @default(false) @map("IsVegetarian")
+  isVegan         Boolean        @default(false) @map("IsVegan")
+  isGlutenFree    Boolean        @default(false) @map("IsGlutenFree")
+  isActive        Boolean        @default(true) @map("IsActive")
+  categoryId      Int            @map("CategoryId")
+  spicyLevel      String?        @map("SpicyLevel") @db.VarChar(50)
+  prepTimeMinutes Int?           @map("PrepTimeMinutes")
+  calories        Decimal?       @map("Calories") @db.Decimal(18, 2)
+  category        Category       @relation(fields: [categoryId], references: [id])
+  highlights      MenuHighlight[]
+
+  @@index([categoryId])
+  @@map("MenuItems")
+}
+
+model MenuHighlight {
+  id                 Int      @id @default(autoincrement())
+  menuItemId         Int      @map("MenuItemId")
+  displayOrder       Int      @map("DisplayOrder")
+  section            String   @default("Breakfast") @map("Section") @db.VarChar(100)
+  customTitle        String?  @map("CustomTitle") @db.VarChar(100)
+  customDescription  String?  @map("CustomDescription") @db.VarChar(200)
+  customImageUrl     String?  @map("CustomImageUrl") @db.VarChar(255)
+  isActive           Boolean  @default(true) @map("IsActive")
+  menuItem           MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("MenuHighlights")
+}
+
+model Reservation {
+  id              Int       @id @default(autoincrement())
+  name            String    @map("Name") @db.VarChar(100)
+  email           String    @map("Email") @db.VarChar(255)
+  phoneNumber     String    @map("PhoneNumber") @db.VarChar(50)
+  numberOfGuests  Int       @map("NumberOfGuests")
+  reservationDate DateTime  @map("ReservationDate")
+  reservationTime DateTime  @map("ReservationTime")
+  specialRequests String?   @map("SpecialRequests") @db.VarChar(500)
+  createdAt       DateTime  @default(now()) @map("CreatedAt")
+  isConfirmed     Boolean   @default(false) @map("IsConfirmed")
+  paymentStatus   String    @default("Pending") @map("PaymentStatus") @db.VarChar(50)
+  paymentMethod   String    @default("PayU") @map("PaymentMethod") @db.VarChar(50)
+  paymentTxnId    String?   @map("PaymentTxnId") @db.VarChar(255)
+  paymentAmount   Decimal   @default(500.00) @map("PaymentAmount") @db.Decimal(18, 2)
+
+  @@map("Reservations")
+}
+
+model Order {
+  id                 Int         @id @default(autoincrement())
+  customerName       String      @map("CustomerName") @db.VarChar(100)
+  customerEmail      String      @map("CustomerEmail") @db.VarChar(255)
+  customerPhone      String      @map("CustomerPhone") @db.VarChar(50)
+  deliveryAddress    String      @map("DeliveryAddress") @db.VarChar(200)
+  city               String      @map("City") @db.VarChar(50)
+  state              String      @map("State") @db.VarChar(50)
+  postalCode         String      @map("PostalCode") @db.VarChar(20)
+  specialInstructions String?    @map("SpecialInstructions") @db.VarChar(500)
+  orderType          String      @map("OrderType") @db.VarChar(50)
+  deliveryTime       DateTime?   @map("DeliveryTime")
+  subTotal           Decimal     @map("SubTotal") @db.Decimal(18, 2)
+  deliveryFee        Decimal     @map("DeliveryFee") @db.Decimal(18, 2)
+  tax                Decimal     @map("Tax") @db.Decimal(18, 2)
+  total              Decimal     @map("Total") @db.Decimal(18, 2)
+  paymentMethod      String      @default("Pending") @map("PaymentMethod") @db.VarChar(50)
+  paymentStatus      String      @default("Pending") @map("PaymentStatus") @db.VarChar(50)
+  orderStatus        String      @default("Pending") @map("OrderStatus") @db.VarChar(50)
+  paymentDetails     String      @default("None") @map("PaymentDetails") @db.VarChar(500)
+  orderDate          DateTime    @default(now()) @map("OrderDate")
+  orderItems         OrderItem[]
+
+  @@map("Orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("OrderId")
+  menuItemId Int    @map("MenuItemId")
+  name      String  @map("Name") @db.VarChar(255)
+  price     Decimal @map("Price") @db.Decimal(18, 2)
+  quantity  Int     @map("Quantity")
+  total     Decimal @map("Total") @db.Decimal(18, 2)
+  order     Order   @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@map("OrderItems")
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String   @map("Name") @db.VarChar(100)
+  email     String   @map("Email") @db.VarChar(255)
+  subject   String   @map("Subject") @db.VarChar(200)
+  message   String   @map("Message") @db.VarChar(2000)
+  createdAt DateTime @default(now()) @map("CreatedAt")
+  isRead    Boolean  @default(false) @map("IsRead")
+
+  @@map("Contacts")
+}
+
+model SavedAddress {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("UserId")
+  name           String   @map("Name") @db.VarChar(100)
+  customerName   String   @map("CustomerName") @db.VarChar(100)
+  customerPhone  String   @map("CustomerPhone") @db.VarChar(50)
+  deliveryAddress String  @map("DeliveryAddress") @db.VarChar(200)
+  city           String   @map("City") @db.VarChar(50)
+  state          String   @map("State") @db.VarChar(50)
+  postalCode     String   @map("PostalCode") @db.VarChar(20)
+  isDefault      Boolean  @default(false) @map("IsDefault")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime? @map("UpdatedAt")
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("SavedAddresses")
+}
